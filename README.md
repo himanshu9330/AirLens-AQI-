@@ -1,94 +1,115 @@
-# AirLens AQI Intelligence
+# 🌬️ AirLens: AI-Driven Urban Air Quality Intelligence
 
-![Platform Overview](https://via.placeholder.com/1200x600/020617/6366f1?text=AirLens+AQI+Intelligence)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python-Flask](https://img.shields.io/badge/ML--Service-Flask-green)](https://flask.palletsprojects.com/)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2015-black)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/Backend-Node.js%2FEpress-blue)](https://nodejs.org/)
 
-**AirLens AQI Intelligence** is a premium, AI-driven environmental data platform designed to monitor, predict, and alert users about air quality at the micro-environment (neighborhood and street) level. 
-
-Unlike traditional platforms that provide a single, inaccurate city-wide average, AirLens processes millions of data points to generate high-resolution spatial mapping of pollution zones.
+**AirLens** is an advanced, hyper-local air quality monitoring and predictive intelligence platform. It moves beyond generic city-wide averages by utilizing spatial data engineering and time-series forecasting to provide neighborhood-level pollution insights.
 
 ---
 
-## 🎯 What Has Been Built So Far?
+## 🏗️ System Architecture & Workflow
 
-The current state of the repository features a fully functional, highly polished **Frontend Application** built with a premium SaaS and AI-startup aesthetic (inspired by Stripe, Vercel, and Linear).
+AirLens operates as a distributed system across three core layers: Data Ingestion/Processing, ML Inference, and Live Visualization.
+
+```mermaid
+graph TD
+    subgraph "Data Sources"
+        A[IoT Sensors] --> D[Data Pipeline]
+        B[Satellite Imagery] --> D
+        C[Traffic APIs] --> D
+    end
+
+    subgraph "ML Inference (Python/Flask)"
+        E[ARIMA Time-Series Engine]
+        F[Source Attribution Model]
+        G[Gemini AI Policy Advisor]
+    end
+
+    subgraph "Backend (Node.js/MongoDB)"
+        H[Authentication Service]
+        I[Measurement Store]
+        J[Spatial Query Engine]
+    end
+
+    subgraph "Frontend (Next.js/Framer Motion)"
+        K[Admin Command Center]
+        L[Citizen Live Dashboard]
+    end
+
+    D --> J
+    J --> I
+    I --> E
+    E --> L
+    F --> K
+    G --> K
+    L --> K
+```
+
+---
+
+## 🧠 Machine Learning Engine
+
+### 📈 Time-Series Forecasting: ARIMA Model
+AirLens employs the **ARIMA (AutoRegressive Integrated Moving Average)** model to provide high-accuracy 24-hour AQI forecasts. Unlike simple linear models, ARIMA is specifically designed to understand the complex temporal dependencies in environmental data.
+
+*   **AR (AutoRegressive)**: Leverages the relationship between an observation and a number of lagged observations (past AQI trends).
+*   **I (Integrated)**: Uses differencing of raw observations to make the time series stationary, removing seasonal or daily bias.
+*   **MA (Moving Average)**: Incorporates the dependency between an observation and a residual error from a moving average model applied to lagged observations.
+
+**Why ARIMA?** It excels at capturing the "inertia" of air pollution — where current stagnant air or wind patterns strongly influence the immediate future, allowing for proactive health alerts before pollution spikes occur.
+
+### 🤖 Generative AI Integration
+AirLens integrates **Google Gemini Pro** to translate raw chemical data into actionable policy recommendations for administrators. It analyzes PM2.5/NO2 ratios and automatically suggests interventions like "Halting non-essential construction" or "Implementing traffic diversions" based on detected pollution causes.
+
+---
+
+## 🛠️ Key Technical Features
 
 ### 1. The Premium Landing Page (`/`)
-A visually stunning, conversion-optimized landing page designed with extensive `framer-motion` animations, glassmorphism, and deep-space dark mode aesthetics.
+*   **Spatial Data Flow**: 6-stage animated pipeline demonstrating live data ingestion.
+*   **Problem Visualization**: Animated comparison between "Standard City AQI" and "AirLens Hyper-Local Mapping."
+*   **Glassmorphism UI**: High-end SaaS aesthetic with deep-space dark mode and `framer-motion` micro-interactions.
 
-*   **Hero Section**: Dynamic floating data nodes and slow-pulsing background auroras setting the tone of "Live AI Pollution Intelligence."
-*   **The Problem Visualization**: Animated side-by-side comparison illustrating why standard City AQI (a single number) is flawed compared to a AirLens interactive map.
-*   **Intelligence Data Flow**: A 6-stage continuously animated pipeline demonstrating how IoT/Satellite data moves through Spatial Processing and ML Inference to reach the Live Dashboard.
-*   **Interactive Features**: Glass cards detailing the core utilities (AI Source Detection, Predictive Forecasting, Health Advisories) that glow and lift on hover.
-*   **Map Simulation**: A massive "fake UI" mockup of the dashboard rendered entirely in code, featuring infinitely expanding heat zones and pop-in sensor markers.
-*   **Tech Showcase**: Explicitly highlights the data engineering stack (TensorFlow, WebSockets, PostGIS).
-*   **Impact Metrics**: Scroll-triggered counting animations (e.g., 5.2M+ Daily Data Points).
-*   **Impact Metrics**: Scroll-triggered counting animations (e.g., 5.2M+ Daily Data Points).
-
-### 2. The Live Intelligence Dashboard (`/dashboard`)
-The core user interface for monitoring the city's air quality in real-time. It features a responsive sidebar network and a densely packed grid of data visualizations.
-
-#### 📊 Exactly What Data Is Shown on the Dashboard?
-
-1.  **Overview Metrics (`OverviewCards.tsx`)**:
-    *   **Current City AQI**: The baseline macro average (e.g., *154 PM2.5*). Includes a sparkline chart showing the last 6 hours, trend indicators (e.g., *+12%*), and status text (*Poor*).
-    *   **Most Polluted Ward**: AirLens identification of the worst zone in real-time (e.g., *Bandra W - AQI 182*, alongside the cause like *Traffic Spike*).
-    *   **Primary Source**: The leading cause of the current pollution index (e.g., *Vehicular Emission contributing 42%*), tracked against yesterday's data.
-    *   **24h Prediction**: The forecasted state of the air for tomorrow, powered by the ML models (e.g., *Expected AQI 120, Improving due to expected light rain*).
-
-2.  **Live Spatial Mapping (`AQIMapFeature.tsx`)**:
-    *   A radar-style visualization of the city grid.
-    *   Plots individual, glowing sensor nodes categorized by severity (Emerald = Good, Rose = Critical).
-    *   Displays sweeping radar blips to simulate live data ingestion.
-
-3.  **Pollutant Breakdown (`PollutionSourcesPanel.tsx`)**:
-    *   A multi-layered progress bar breaking down the exact chemical composition of the air.
-    *   Tracks: **PM2.5 (Particulate Matter)**, **PM10**, **NO2 (Nitrogen Dioxide)**, and **O3 (Ozone)**.
-    *   Marks safety thresholds on the meters to show how close the air is to hazardous levels.
-
-4.  **LSTM Forecasting Chart (`PredictionChart.tsx`)**:
-    *   A beautiful, dual-axis composed chart showing historical data merging into predicted future data.
-    *   Plots the **Observed AQI** (solid line) against the AI's **Predicted AQI** (dashed line).
-    *   Also overlays **Confidence Intervals** (shaded areas around the prediction) so the user knows the reliability of the forecast.
-
-5.  **Critical Alerts Feed (`AlertsPanel.tsx`)**:
-    *   A streaming list of localized events.
-    *   Shows actionable notifications like: *"PM2.5 levels exceeding safe limits in Industrial Zone Phase 2"* or *"Significant reduction in Nitrogen Dioxide detected near Central Park."*
+### 2. Digital Twin Dashboard (`/admin/dashboard`)
+*   **Live Spatial Heatmap**: Interactive mapping of pollution clusters using sensor nodes.
+*   **Source Attribute Panel**: ML-based detection of primary pollutants (Vehicular vs. Industrial).
+*   **Policy Command Center**: AI-generated health advisories and containment strategies.
 
 ---
 
-## 🛠️ Technology Stack
+## ⚙️ Tech Stack
 
-*   **Framework**: [Next.js](https://nextjs.org/) (App Router)
-*   **UI Library**: [React 19](https://react.dev/)
-*   **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-*   **Animations**: [Framer Motion](https://www.framer.com/motion/)
-*   **Charting**: [Recharts](https://recharts.org/)
-*   **Icons**: [Lucide React](https://lucide.dev/)
+- **Frontend**: Next.js 15 (App Router), Tailwind CSS v4, Framer Motion, Lucide React.
+- **Backend**: Node.js, Express, MongoDB/Mongoose, JWT Authentication.
+- **ML Service**: Python 3.10, Flask, Scikit-Learn, Statsmodels (ARIMA), Gemini 1.5 Flash.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Installation & Setup
 
-To run the frontend visualization locally:
+### 1. Backend & Frontend
+```bash
+# Setup Backend
+cd backend && npm install
+cp .env.example .env # Add your keys
+npm run dev
 
-1. **Navigate to the frontend directory**
-   ```bash
-   cd frontend
-   ```
+# Setup Frontend
+cd frontend && npm install
+npm run dev
+```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **View the Application**
-   Open [http://localhost:3020](http://localhost:3020) (or the port specified in your terminal) in your browser.
+### 2. ML Service
+```bash
+cd ml-service
+python -m venv venv
+source venv/bin/activate # or .\venv\Scripts\activate on Windows
+pip install -r requirements.txt
+python app.py
+```
 
 ---
 
-*Built with precision for the future of urban environmental monitoring.*
+*Built for a cleaner, more intelligent urban future.*
