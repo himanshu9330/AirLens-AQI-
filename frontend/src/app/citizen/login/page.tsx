@@ -41,7 +41,7 @@ export default function CitizenLoginPage() {
                             <Wind className="h-4 w-4" />
                         </div>
                         <span className="font-display font-bold text-xl tracking-tight text-white">
-                            HyperLocal<span className="text-indigo-400">.</span>
+                            AirLens<span className="text-indigo-400">.</span>
                         </span>
                     </Link>
                 </nav>
@@ -57,7 +57,7 @@ export default function CitizenLoginPage() {
                                 Citizen Access
                             </div>
                             <h1 className="text-3xl font-black text-white tracking-tight mb-2 font-display">
-                                Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">HyperLocal</span>
+                                Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">AirLens</span>
                             </h1>
                             <p className="text-slate-400 font-medium text-sm">
                                 Verify your identity to view street-level pollution data in your area.

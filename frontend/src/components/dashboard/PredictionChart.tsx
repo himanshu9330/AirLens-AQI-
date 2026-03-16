@@ -18,7 +18,12 @@ export function PredictionChart() {
                 setLoading(false);
             }
         };
+
         fetchChartData();
+
+        // Auto-refresh every 30 seconds to make it feel 'live'
+        const interval = setInterval(fetchChartData, 10000);
+        return () => clearInterval(interval);
     }, []);
 
     if (loading) return (
@@ -34,7 +39,13 @@ export function PredictionChart() {
         >
             <div className="flex items-start justify-between mb-2">
                 <div>
-                    <h2 className="text-lg flex-shrink-0 font-bold text-slate-100 font-display">24-Hour National Forecast</h2>
+                    <div className="flex items-center gap-2 mb-1">
+                        <h2 className="text-lg flex-shrink-0 font-bold text-slate-100 font-display">6-Hour National Forecast</h2>
+                        <span className="flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-rose-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                        </span>
+                    </div>
                     <p className="text-sm flex-shrink-0 text-slate-400">Aggregated prediction vs actual</p>
                 </div>
                 <div className="flex flex-col gap-2 text-xs font-medium items-end">
@@ -69,6 +80,7 @@ export function PredictionChart() {
                             tick={{ fill: '#64748b', fontSize: 10 }}
                             axisLine={false}
                             tickLine={false}
+                            minTickGap={30}
                         />
                         <YAxis
                             stroke="#64748b"
@@ -88,6 +100,8 @@ export function PredictionChart() {
                             connectNulls={true}
                             fillOpacity={1}
                             fill="url(#colorActual)"
+                            animationDuration={1500}
+                            isAnimationActive={true}
                         />
                         <Area
                             type="monotone"
@@ -98,6 +112,8 @@ export function PredictionChart() {
                             connectNulls={true}
                             fillOpacity={1}
                             fill="url(#colorPredicted)"
+                            animationDuration={2000}
+                            isAnimationActive={true}
                         />
                     </AreaChart>
                 </ResponsiveContainer>

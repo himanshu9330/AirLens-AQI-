@@ -54,11 +54,14 @@ export function PollutionSourcesPanel() {
             }
         };
         fetchStats();
+        const interval = setInterval(fetchStats, 10000); // Poll every 10s for live source updates
+        return () => clearInterval(interval);
     }, []);
 
     if (loading) return (
         <div className="glass-panel p-6 rounded-3xl h-64 animate-pulse bg-slate-800/20" />
     );
+
 
     // Merge static branding (icons, colors) with dynamic backend values
     const displaySources = sourceTemplates.map(template => {
@@ -103,10 +106,21 @@ export function PollutionSourcesPanel() {
                                         <p className="text-xs text-slate-500">{source.description}</p>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <span className={`text-lg font-bold ${isPrimary ? 'text-indigo-400' : 'text-slate-100'}`}>
+                                <div className="text-right flex items-center gap-2">
+                                    {isPrimary && (
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                                        </span>
+                                    )}
+                                    <motion.span 
+                                        key={source.percentage}
+                                        initial={{ opacity: 0.5, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className={`text-lg font-bold ${isPrimary ? 'text-indigo-400' : 'text-slate-100'}`}
+                                    >
                                         {source.percentage}%
-                                    </span>
+                                    </motion.span>
                                 </div>
                             </div>
 

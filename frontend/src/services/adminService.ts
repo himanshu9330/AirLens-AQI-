@@ -42,3 +42,28 @@ export const getDetailedAlerts = async () => {
     if (!response.ok) throw new Error('Failed to fetch detailed alerts');
     return response.json();
 };
+
+export const getDetailedPredictions = async () => {
+    const token = localStorage.getItem('adminToken');
+    const response = await fetch(`${API_URL}/admin/detailed-predictions`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    if (!response.ok) throw new Error('Failed to fetch detailed predictions');
+    return response.json();
+};
+
+export const dispatchStateAlert = async (state: string, aqi: number) => {
+    const token = localStorage.getItem('adminToken');
+    const response = await fetch(`${API_URL}/admin/dispatch-alert`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ state, aqi })
+    });
+    if (!response.ok) throw new Error('Failed to dispatch alert');
+    return response.json();
+};

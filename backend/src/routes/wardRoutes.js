@@ -5,7 +5,8 @@ const {
     getWardCurrent,
     getWardHistory,
     getWardPrediction,
-    createAlert
+    createAlert,
+    getActiveAlerts
 } = require('../controllers/wardController');
 const { apiLimiter } = require('../middleware/rateLimiter');
 const { validateAlert } = require('../middleware/validator');
@@ -39,5 +40,11 @@ router.get('/:id/prediction', apiLimiter, getWardPrediction);
  * @desc Create a new alert
  */
 router.post('/alerts', apiLimiter, validateAlert, createAlert);
+
+/**
+ * @route GET /api/alerts/active
+ * @desc Get currently active broadcasted alerts
+ */
+router.get('/alerts/active', apiLimiter, getActiveAlerts);
 
 module.exports = router;

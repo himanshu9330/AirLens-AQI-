@@ -52,10 +52,23 @@ const createAlert = async (req, res, next) => {
     }
 };
 
+const getActiveAlerts = async (req, res, next) => {
+    try {
+        // Fetch the most recent active system alert broadcasted by admin
+        const alerts = await Alert.find({ isActive: true, type: 'SYSTEM' })
+            .sort({ createdAt: -1 })
+            .limit(1);
+        res.json(alerts);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getWards,
     getWardCurrent,
     getWardHistory,
     getWardPrediction,
-    createAlert
+    createAlert,
+    getActiveAlerts
 };

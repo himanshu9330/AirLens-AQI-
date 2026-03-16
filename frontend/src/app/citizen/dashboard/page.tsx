@@ -27,6 +27,24 @@ export default function CitizenDashboard() {
     // Alerting state
     const [showRedZoneAlert, setShowRedZoneAlert] = useState(false);
     const [showPredictiveAlert, setShowPredictiveAlert] = useState(false);
+    const [globalBroadcast, setGlobalBroadcast] = useState<any>(null);
+
+    // Fetch active system broadcasts
+    const fetchActiveBroadcasts = useCallback(async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/alerts/active`);
+            if (response.ok) {
+                const alerts = await response.json();
+                if (alerts && alerts.length > 0) {
+                    setGlobalBroadcast(alerts[0]);
+                } else {
+                    setGlobalBroadcast(null);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch active broadcasts:', error);
+        }
+    }, []);
 
     // Simulated API call based on location
     const fetchAqiData = useCallback(async (lat: number, lng: number) => {
@@ -124,9 +142,15 @@ export default function CitizenDashboard() {
                 maximumAge: 0
             }
         );
+        // Start polling for broadcasts
+        fetchActiveBroadcasts();
+        const intervalId = setInterval(fetchActiveBroadcasts, 10000);
 
-        return () => navigator.geolocation.clearWatch(watchId);
-    }, [fetchAqiData]);
+        return () => {
+            navigator.geolocation.clearWatch(watchId);
+            clearInterval(intervalId);
+        };
+    }, [fetchAqiData, fetchActiveBroadcasts]);
 
     return (
         <div className="min-h-screen bg-[#020617] text-white font-sans overflow-x-hidden">
@@ -157,6 +181,42 @@ export default function CitizenDashboard() {
                     </div>
                 </div>
             </header>
+
+            {/* Global Broadcast Alert (State-Level from Admin) */}
+            <AnimatePresence>
+                {globalBroadcast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -100 }}
+                        transition={{ type: 'spring', bounce: 0.4 }}
+                        className="fixed top-16 left-0 right-0 z-50 w-full bg-rose-600/90 backdrop-blur-xl border-b border-rose-500 shadow-[0_10px_30px_rgba(225,29,72,0.3)]"
+                    >
+                        <div className="max-w-7xl mx-auto px-4 py-4 sm:flex items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-white/20 rounded-full animate-pulse">
+                                    <ShieldAlert className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-black/30 text-rose-100 uppercase tracking-widest">State-wide Emergency Protocol</span>
+                                    </div>
+                                    <h3 className="font-bold text-white text-lg leading-tight mt-1">{globalBroadcast.ward} AQI Emergency</h3>
+                                    <p className="text-rose-100/90 text-sm mt-1 max-w-2xl font-medium">
+                                        {globalBroadcast.message}
+                                    </p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setGlobalBroadcast(null)}
+                                className="mt-3 sm:mt-0 shrink-0 px-4 py-2 bg-black/20 hover:bg-black/40 text-white rounded-lg text-xs font-bold transition-colors"
+                            >
+                                Acknowledge
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Red Zone Global Alert */}
             <AnimatePresence>

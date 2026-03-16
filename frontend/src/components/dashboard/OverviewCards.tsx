@@ -35,7 +35,10 @@ export function OverviewCards() {
                 setLoading(false);
             }
         };
+
         fetchStats();
+        const interval = setInterval(fetchStats, 10000); // Auto-refresh every 10s
+        return () => clearInterval(interval);
     }, []);
 
     const metrics = [
@@ -115,9 +118,24 @@ export function OverviewCards() {
 
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex-1 min-w-0">
-                            <p className="text-slate-400 text-sm font-medium mb-1 truncate">{metric.title}</p>
+                            <div className="flex items-center gap-2 mb-1">
+                                <p className="text-slate-400 text-sm font-medium truncate">{metric.title}</p>
+                                {metric.title.includes('Source') && (
+                                    <span className="relative flex h-1.5 w-1.5">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-500"></span>
+                                    </span>
+                                )}
+                            </div>
                             <div className="flex items-baseline gap-2">
-                                <h3 className="text-2xl xl:text-3xl font-bold font-display text-slate-50 truncate">{metric.value}</h3>
+                                <motion.h3 
+                                    key={metric.value}
+                                    initial={{ opacity: 0.7 }}
+                                    animate={{ opacity: 1 }}
+                                    className="text-2xl xl:text-3xl font-bold font-display text-slate-50 truncate"
+                                >
+                                    {metric.value}
+                                </motion.h3>
                             </div>
                             <p className="text-slate-300 text-xs mt-1 font-medium truncate">{metric.unit}</p>
                         </div>

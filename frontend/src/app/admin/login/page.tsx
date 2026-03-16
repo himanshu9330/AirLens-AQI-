@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
                         <Wind className="h-4 w-4" />
                     </div>
                     <span className="font-display font-bold text-xl tracking-tight text-white">
-                        HyperLocal<span className="text-indigo-400">.</span>
+                        AirLens<span className="text-indigo-400">.</span>
                     </span>
                 </Link>
             </nav>

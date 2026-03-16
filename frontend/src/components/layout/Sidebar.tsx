@@ -6,16 +6,16 @@ import { LayoutDashboard, Map, Activity, CloudFog, AlertTriangle, BarChart3, Set
 import { motion } from 'framer-motion';
 
 const mainNavigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'AQI Map', href: '#aqi-map', icon: Map },
     { name: 'Sources', href: '#sources', icon: CloudFog },
-    { name: 'Predictions', href: '#predictions', icon: Activity },
+    { name: 'Predictions', href: '/admin/dashboard/predictions', icon: Activity },
 ];
 
 const secondaryNavigation = [
     { name: 'Alerts', href: '#alerts', icon: AlertTriangle, status: '3' },
-    { name: 'Analytics', href: '#analytics', icon: BarChart3 },
-    { name: 'Settings', href: '#settings', icon: Settings },
+    { name: 'Analytics', href: '/admin/dashboard/analytics', icon: BarChart3 },
+    { name: 'Settings', href: '/admin/dashboard/settings', icon: Settings },
 ];
 
 export function Sidebar() {
