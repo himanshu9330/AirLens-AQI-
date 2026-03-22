@@ -1,115 +1,348 @@
-# 🌬️ AirLens: AI-Driven Urban Air Quality Intelligence
+# 🌍 AQI Prediction & Analysis System – Full Technical Documentation
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python-Flask](https://img.shields.io/badge/ML--Service-Flask-green)](https://flask.palletsprojects.com/)
-[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2015-black)](https://nextjs.org/)
-[![FastAPI](https://img.shields.io/badge/Backend-Node.js%2FEpress-blue)](https://nodejs.org/)
+## 🚀 Overview
 
-**AirLens** is an advanced, hyper-local air quality monitoring and predictive intelligence platform. It moves beyond generic city-wide averages by utilizing spatial data engineering and time-series forecasting to provide neighborhood-level pollution insights.
+This project is an end-to-end **Air Quality Monitoring, Prediction, and Analysis System** that:
+
+* Collects AQI + weather data
+* Predicts future AQI using a **Multivariate LSTM model**
+* Visualizes AQI spatially on maps
+* Performs **source detection**
+* Provides **policy recommendations**
 
 ---
 
-## 🏗️ System Architecture & Workflow
+# 📊 1. Data Collection
 
-AirLens operates as a distributed system across three core layers: Data Ingestion/Processing, ML Inference, and Live Visualization.
+## Sources:
 
-```mermaid
-graph TD
-    subgraph "Data Sources"
-        A[IoT Sensors] --> D[Data Pipeline]
-        B[Satellite Imagery] --> D
-        C[Traffic APIs] --> D
-    end
+* Air Quality API (PM2.5, PM10, NO₂)
+* Weather API (Temperature, Humidity, Wind Speed, Rainfall)
 
-    subgraph "ML Inference (Python/Flask)"
-        E[ARIMA Time-Series Engine]
-        F[Source Attribution Model]
-        G[Gemini AI Policy Advisor]
-    end
+## Data Frequency:
 
-    subgraph "Backend (Node.js/MongoDB)"
-        H[Authentication Service]
-        I[Measurement Store]
-        J[Spatial Query Engine]
-    end
+* Hourly → converted to daily aggregates
 
-    subgraph "Frontend (Next.js/Framer Motion)"
-        K[Admin Command Center]
-        L[Citizen Live Dashboard]
-    end
+## Features:
 
-    D --> J
-    J --> I
-    I --> E
-    E --> L
-    F --> K
-    G --> K
-    L --> K
+```text
+aqi, temperature, humidity, wind_speed, rain
 ```
 
 ---
 
-## 🧠 Machine Learning Engine
+# 🧠 2. AQI Calculation
 
-### 📈 Time-Series Forecasting: ARIMA Model
-AirLens employs the **ARIMA (AutoRegressive Integrated Moving Average)** model to provide high-accuracy 24-hour AQI forecasts. Unlike simple linear models, ARIMA is specifically designed to understand the complex temporal dependencies in environmental data.
+## Method:
 
-*   **AR (AutoRegressive)**: Leverages the relationship between an observation and a number of lagged observations (past AQI trends).
-*   **I (Integrated)**: Uses differencing of raw observations to make the time series stationary, removing seasonal or daily bias.
-*   **MA (Moving Average)**: Incorporates the dependency between an observation and a residual error from a moving average model applied to lagged observations.
+AQI is approximated using **PM2.5 concentration**
 
-**Why ARIMA?** It excels at capturing the "inertia" of air pollution — where current stagnant air or wind patterns strongly influence the immediate future, allowing for proactive health alerts before pollution spikes occur.
+### Formula (Simplified Linear Scaling):
 
-### 🤖 Generative AI Integration
-AirLens integrates **Google Gemini Pro** to translate raw chemical data into actionable policy recommendations for administrators. It analyzes PM2.5/NO2 ratios and automatically suggests interventions like "Halting non-essential construction" or "Implementing traffic diversions" based on detected pollution causes.
-
----
-
-## 🛠️ Key Technical Features
-
-### 1. The Premium Landing Page (`/`)
-*   **Spatial Data Flow**: 6-stage animated pipeline demonstrating live data ingestion.
-*   **Problem Visualization**: Animated comparison between "Standard City AQI" and "AirLens Hyper-Local Mapping."
-*   **Glassmorphism UI**: High-end SaaS aesthetic with deep-space dark mode and `framer-motion` micro-interactions.
-
-### 2. Digital Twin Dashboard (`/admin/dashboard`)
-*   **Live Spatial Heatmap**: Interactive mapping of pollution clusters using sensor nodes.
-*   **Source Attribute Panel**: ML-based detection of primary pollutants (Vehicular vs. Industrial).
-*   **Policy Command Center**: AI-generated health advisories and containment strategies.
-
----
-
-## ⚙️ Tech Stack
-
-- **Frontend**: Next.js 15 (App Router), Tailwind CSS v4, Framer Motion, Lucide React.
-- **Backend**: Node.js, Express, MongoDB/Mongoose, JWT Authentication.
-- **ML Service**: Python 3.10, Flask, Scikit-Learn, Statsmodels (ARIMA), Gemini 1.5 Flash.
-
----
-
-## 🚀 Installation & Setup
-
-### 1. Backend & Frontend
-```bash
-# Setup Backend
-cd backend && npm install
-cp .env.example .env # Add your keys
-npm run dev
-
-# Setup Frontend
-cd frontend && npm install
-npm run dev
+```text
+AQI ≈ PM2.5 value (normalized)
 ```
 
-### 2. ML Service
-```bash
-cd ml-service
-python -m venv venv
-source venv/bin/activate # or .\venv\Scripts\activate on Windows
-pip install -r requirements.txt
-python app.py
+### Improved Approach (Optional):
+
+* Breakpoints (EPA standard)
+* Interpolation between ranges
+
+---
+
+# 🗺️ 3. Zone Mapping & Area Division
+
+## 🔹 Grid-Based Spatial Division
+
+The entire region is divided into **geographical grids (zones)**:
+
+### Step-by-step:
+
+1. Define bounding box (lat/lon)
+2. Divide into equal grid cells (e.g., 5km × 5km)
+3. Each grid = one AQI zone
+
+```text
+Region → Grid Partition → Zones
 ```
 
 ---
 
-*Built for a cleaner, more intelligent urban future.*
+## 🔹 AQI Calculation for Each Zone
+
+### Method Used:
+
+* **Nearest Neighbor Interpolation**
+
+### Logic:
+
+```text
+If zone has station → use direct AQI
+Else:
+    Find nearest stations
+    Weighted average based on distance
+```
+
+### Example:
+
+```text
+Station A → 50 km → AQI = 200  
+Station B → 80 km → AQI = 250  
+
+Zone AQI ≈ 200–250 (weighted)
+```
+
+---
+
+## 🔹 Visualization
+
+* Map rendered using GeoJSON
+
+* Color-coded zones:
+
+  * 🟢 Good
+  * 🟡 Moderate
+  * 🔴 Unhealthy
+
+* Zoom levels:
+
+  * Country → State AQI
+  * State → City AQI
+  * City → Area AQI
+
+---
+
+# 🔍 4. Source Detection (Advanced Logic)
+
+## ❗ Not just LLM-based — Hybrid Technical Approach
+
+### 🔹 Features Used:
+
+* Wind direction & speed
+* Pollution gradients
+* Temporal AQI variation
+* Industrial/traffic zones
+
+---
+
+## 🔹 Algorithm Used
+
+### 1. Gradient Analysis
+
+```text
+AQI difference between nearby zones → detect direction of increase
+```
+
+### 2. Wind Vector Correlation
+
+```text
+If AQI increases opposite to wind direction → possible source
+```
+
+### 3. Temporal Pattern Detection
+
+```text
+Morning spike → traffic  
+Night spike → industrial activity
+```
+
+---
+
+## 🔹 ML-Based Classification
+
+* Input:
+
+  * AQI trends
+  * Weather data
+  * Time patterns
+
+* Output:
+
+```text
+Traffic / Industrial / Dust / Mixed Source
+```
+
+---
+
+## 🔹 Heuristic Model
+
+```text
+IF wind low AND AQI high → local source  
+IF wind high AND AQI spreads → external source  
+```
+
+---
+
+# 🤖 5. AQI Prediction Model
+
+## Model Type:
+
+* Multivariate LSTM
+
+## Input:
+
+```text
+Past 48 hours → AQI + Weather + Lag features
+```
+
+## Output:
+
+```text
+Next 12-hour AQI prediction
+```
+
+---
+
+## 🔹 Features Used:
+
+* AQI
+* Temperature
+* Humidity
+* Wind Speed
+* Rainfall
+* Lag features (t-1, t-2)
+* AQI change (ΔAQI)
+
+---
+
+## 🔹 Training Pipeline:
+
+```text
+Train-Test Split
+→ Scaling (MinMax)
+→ Sequence Creation
+→ LSTM Training
+→ Evaluation (MAE, RMSE)
+```
+
+---
+
+## 🔹 Key Improvements:
+
+* MAE / Huber Loss
+* Dropout Regularization
+* Recursive Prediction
+* Weather Correction Layer
+
+---
+
+# ⚡ 6. Real-Time Prediction Pipeline
+
+```text
+API Data → Preprocessing → LSTM Model
+                                ↓
+                        Prediction Output
+                                ↓
+                    Weather Adjustment Layer
+                                ↓
+                         Final AQI Value
+```
+
+---
+
+# 🌧️ Weather Correction Logic
+
+```text
+If rainfall ↑ → AQI ↓  
+If wind speed ↑ → AQI ↓  
+```
+
+---
+
+# 🧾 7. Policy Recommendation System
+
+## 🔹 Multi-Factor Analysis
+
+Inputs:
+
+* AQI level
+* Source type
+* Weather conditions
+* Time patterns
+
+---
+
+## 🔹 Rule-Based + AI Hybrid
+
+### Example Logic:
+
+```text
+IF AQI > 200 AND source = traffic:
+    Suggest:
+        - Odd-even rule
+        - Traffic restriction
+        - Public transport boost
+```
+
+```text
+IF AQI > 250 AND source = industrial:
+    Suggest:
+        - Temporary shutdown
+        - Emission control
+```
+
+---
+
+## 🔹 Generated Outputs (Policy Maker View)
+
+* Short-term actions
+* Long-term strategies
+* Risk alerts
+
+---
+
+# 🏗️ 8. Backend Architecture
+
+```text
+FastAPI Backend
+│
+├── Load LSTM Model (.h5)
+├── Load Scaler (.pkl)
+├── Fetch Real-time Data
+├── Prediction Engine
+├── Source Detection Module
+└── Policy Engine
+```
+
+---
+
+# 📁 Required Files
+
+```text
+lstm_model.h5
+scaler.pkl
+aqi_dataset.csv
+features.json
+```
+
+---
+
+# 📈 9. Evaluation Metrics
+
+* MAE (Mean Absolute Error)
+* RMSE (Root Mean Squared Error)
+
+---
+
+# 🔥 10. Key Highlights
+
+✅ Multivariate AQI prediction
+✅ Weather-aware modeling
+✅ Spatial AQI mapping
+✅ Source detection using hybrid logic
+✅ Intelligent policy recommendation system
+
+---
+
+# 💡 Conclusion
+
+This system combines:
+
+* Machine Learning (LSTM)
+* Spatial Analysis
+* Environmental Modeling
+* Rule-based Intelligence
+
+to create a **complete AQI monitoring and decision-support platform**.
+
+---
