@@ -346,3 +346,74 @@ This system combines:
 to create a **complete AQI monitoring and decision-support platform**.
 
 ---
+
+# 🛠️ Installation & Getting Started
+
+## 📥 Prerequisites
+
+Ensure you have the following installed on your system:
+- [Node.js](https://nodejs.org/) (v16+. recommended for frontend and backend)
+- [Python 3.8+](https://www.python.org/) (for ML service)
+- [Git](https://git-scm.com/)
+
+**Clone the repository:**
+```bash
+git clone <repository_url>
+cd AQI-prediction
+```
+
+## 🖥️ 1. Frontend
+
+The frontend is built with React/Next.js.
+
+```bash
+# Navigate to the frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+## ⚙️ 2. Backend
+
+The backend is built with Node.js/Express.
+
+```bash
+# Navigate to the backend directory
+cd backend
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+## 🤖 3. ML-Service
+
+The machine learning service (FastAPI/Python) handles AQI prediction and data analysis.
+
+```bash
+# Navigate to the ml-service directory
+cd ml-service
+
+# Create a virtual environment (recommended)
+python -m venv venv
+
+# Activate the virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the FastAPI service (using Uvicorn)
+uvicorn main:app --reload
+```
+
+---
