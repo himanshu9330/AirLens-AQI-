@@ -10,7 +10,7 @@ const wardRoutes = require('./routes/wardRoutes');
 const authRoutes = require('./routes/authRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocs = require('./config/swagger');
-require('dotenv').config();
+require('dotenv').config({ override: true });
 
 const app = express();
 
@@ -21,7 +21,9 @@ connectDB();
 setupJobs();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: false,
+}));
 app.use(cors());
 app.use(express.json());
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
@@ -36,6 +38,8 @@ app.use('/api/wards', wardRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/aqi', require('./routes/wardAqiRoutes'));
+app.use('/api/grid', require('./routes/gridRoutes'));
 
 // Basic Route
 app.get('/', (req, res) => {

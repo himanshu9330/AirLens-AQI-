@@ -1,6 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { OverviewCards } from '@/components/dashboard/OverviewCards';
 import { PollutionSourcesPanel } from '@/components/dashboard/PollutionSourcesPanel';
@@ -17,6 +19,7 @@ const AQIMapFeature = dynamic(() => import('@/components/dashboard/AQIMapFeature
 });
 
 export default function DashboardPage() {
+    const router = useRouter();
     return (
         <DashboardLayout>
             <div className="pb-8">
@@ -30,15 +33,34 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Main Content Area - Left Side */}
                     <div className="lg:col-span-2 flex flex-col gap-6">
-                        <AQIMapFeature />
+                        <section id="aqi-map" className="flex flex-col gap-4">
+                            <div className="flex items-center justify-between px-2">
+                                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                                    Live Geographic Intelligence
+                                </h2>
+                                <button 
+                                    onClick={() => router.push('/admin/dashboard/aqi-map')}
+                                    className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-widest flex items-center gap-1 group"
+                                >
+                                    View State-wise Intelligence 
+                                    <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+                                </button>
+                            </div>
+                            <AQIMapFeature />
+                        </section>
                         <PredictionChart />
                     </div>
 
                     {/* Action & Intelligence Panels - Right Side */}
                     <div className="lg:col-span-1 flex flex-col gap-6">
                         <ActiveInterventions />
-                        <AlertsPanel />
-                        <PollutionSourcesPanel />
+                        <section id="alerts">
+                            <AlertsPanel />
+                        </section>
+                        <section id="sources">
+                            <PollutionSourcesPanel />
+                        </section>
                     </div>
                 </div>
             </div>

@@ -22,9 +22,13 @@ export const getAdminChartData = async () => {
     return response.json();
 };
 
-export const getNationalHotspots = async (lat: number, lng: number) => {
+export const getNationalHotspots = async (level: string = 'state', state?: string, city?: string) => {
     const token = localStorage.getItem('adminToken');
-    const response = await fetch(`${API_URL}/admin/national-hotspots?lat=${lat}&lng=${lng}`, {
+    let url = `${API_URL}/admin/national-hotspots?level=${level}`;
+    if (state) url += `&state=${encodeURIComponent(state)}`;
+    if (city) url += `&city=${encodeURIComponent(city)}`;
+    
+    const response = await fetch(url, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -67,3 +71,39 @@ export const dispatchStateAlert = async (state: string, aqi: number) => {
     if (!response.ok) throw new Error('Failed to dispatch alert');
     return response.json();
 };
+
+export const getModelAccuracyMetrics = async () => {
+    const token = localStorage.getItem('adminToken');
+    const response = await fetch(`${API_URL}/admin/accuracy-metrics`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    if (!response.ok) throw new Error('Failed to fetch model accuracy metrics');
+    return response.json();
+};
+
+export const getWardwiseAqi = async () => {
+    const response = await fetch(`${API_URL}/aqi/wardwise`);
+    if (!response.ok) throw new Error('Failed to fetch ward-wise AQI data');
+    return response.json();
+};
+
+export const getHyperlocalAqi = async () => {
+    // Falls back to national hotspots as grid source until dedicated endpoint is added
+    const token = localStorage.getItem('adminToken');
+    const response = await fetch(`${API_URL}/admin/national-hotspots?level=state`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch hyperlocal AQI data');
+    const data = await response.json();
+    // Normalize to {lat, lon, aqi} format
+    return (data || []).map((d: any) => ({ lat: d.lat, lon: d.lng, aqi: d.aqi }));
+};
+
+export const getGridData = async (location: string = 'india') => {
+    const response = await fetch(`${API_URL}/grid?location=${encodeURIComponent(location)}`);
+    if (!response.ok) throw new Error('Failed to fetch grid data');
+    return response.json();
+};
+

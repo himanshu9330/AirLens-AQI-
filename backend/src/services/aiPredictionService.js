@@ -38,7 +38,7 @@ Factor in the current trend from the recent history.
 Output Format: You MUST output ONLY a valid JSON array containing exactly 24 integers representing the predicted AQI for the next 24 hours (e.g. [120, 125, 130, 115, ...]). Do not include any text, reasoning, or markdown formatting blocks (\`\`\`json). Just the raw array string.`;
 
             const response = await this.ai.models.generateContent({
-                model: 'gemini-1.5-flash',
+                model: 'gemini-1.5-pro',
                 contents: prompt,
                 config: {
                     temperature: 0.3,
@@ -119,7 +119,7 @@ Format exactly like this:
 ]`;
 
             const response = await this.ai.models.generateContent({
-                model: 'gemini-1.5-flash',
+                model: 'gemini-1.5-pro',
                 contents: prompt,
                 config: { temperature: 0.4 }
             });

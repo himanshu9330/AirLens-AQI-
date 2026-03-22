@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, Variants } from 'framer-motion';
-import { Wind, MapPin, Cloudy, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Wind, MapPin, Cloudy, TrendingUp, ArrowUpRight, ArrowDownRight, Map } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { getAdminStats } from '@/services/adminService';
 
@@ -21,6 +22,7 @@ const item: Variants = {
 };
 
 export function OverviewCards() {
+    const router = useRouter();
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -112,7 +114,8 @@ export function OverviewCards() {
                     key={i}
                     variants={item}
                     whileHover={{ y: -5, scale: 1.01 }}
-                    className="glass-card rounded-2xl p-5 relative overflow-hidden group cursor-pointer"
+                    onClick={i === 0 ? () => router.push('/admin/dashboard/aqi-map') : undefined}
+                    className={`glass-card rounded-2xl p-5 relative overflow-hidden group ${i === 0 ? 'cursor-pointer ring-1 ring-transparent hover:ring-indigo-500/40 transition-all duration-300' : 'cursor-default'}`}
                 >
                     <div className={`absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-br ${metric.color} opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity duration-500`}></div>
 
@@ -124,6 +127,11 @@ export function OverviewCards() {
                                     <span className="relative flex h-1.5 w-1.5">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-500"></span>
+                                    </span>
+                                )}
+                                {i === 0 && (
+                                    <span className="ml-auto flex items-center gap-1 text-[9px] text-indigo-400 font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <ArrowUpRight className="w-2.5 h-2.5" /> View Details →
                                     </span>
                                 )}
                             </div>
