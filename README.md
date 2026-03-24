@@ -394,7 +394,7 @@ npm run dev
 
 ## 🤖 3. ML-Service
 
-The machine learning service (FastAPI/Python) handles AQI prediction and data analysis.
+The machine learning service (Flask/Python) handles AQI prediction and data analysis.
 
 ```bash
 # Navigate to the ml-service directory
@@ -412,8 +412,8 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Start the FastAPI service (using Uvicorn)
-uvicorn main:app --reload
+# Start the Flask service
+python app.py
 ```
 
 ---

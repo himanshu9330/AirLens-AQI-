@@ -1,30 +1,30 @@
-const { GoogleGenAI } = require('@google/genai');
+const Groq = require('groq-sdk');
 const logger = require('../utils/logger');
 
 class AiPredictionService {
     constructor() {
-        // Initialize Gemini client only if API key is present
-        this.ai = null;
-        if (process.env.GEMINI_API_KEY) {
-            this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        // Initialize Groq client only if API key is present
+        this.groq = null;
+        if (process.env.GROQ_API_KEY) {
+            this.groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
         }
     }
 
     /**
-     * Generate a 24-hour AQI forecast using Gemini LLM
+     * Generate a 24-hour AQI forecast using Groq LLM
      * @param {number} currentAqi - The current aggregate AQI
      * @param {string} primarySource - The primary pollution source
      * @param {Array<number>} recentHistory - array of last few hours of AQI to show the trend
      * @returns {Promise<Array<number> | null>} Array of 24 predicted AQI values, or null if failed/not configured
      */
     async generate24HourForecast(currentAqi, primarySource, recentHistory) {
-        if (!this.ai) {
-            logger.warn('GEMINI_API_KEY is not configured. Falling back to deterministic predictions.');
+        if (!this.groq) {
+            logger.warn('GROQ_API_KEY is not configured. Falling back to deterministic predictions.');
             return null;
         }
 
         try {
-            logger.info('Requesting 24-hour national forecast from Gemini LLM...');
+            logger.info('Requesting 24-hour national forecast from Groq LLM...');
 
             const prompt = `You are an expert environmental AI model forecasting national Air Quality Index (AQI).
 Context:
@@ -35,37 +35,37 @@ Context:
 Task: Predict the average national AQI for the next 24 hours, hour by hour. Consider natural diurnal cycles (e.g., pollution often peaks in early morning and late evening, clearing somewhat during midday). 
 Factor in the current trend from the recent history.
 
-Output Format: You MUST output ONLY a valid JSON array containing exactly 24 integers representing the predicted AQI for the next 24 hours (e.g. [120, 125, 130, 115, ...]). Do not include any text, reasoning, or markdown formatting blocks (\`\`\`json). Just the raw array string.`;
+Output Format: You MUST output ONLY a valid JSON object with a single key "forecast" pointing to an array containing exactly 24 integers representing the predicted AQI for the next 24 hours. Do not include any text, reasoning, or markdown formatting blocks.
+Format example: {"forecast": [120, 125, 130, 115, ...]}`;
 
-            const response = await this.ai.models.generateContent({
-                model: 'gemini-1.5-pro',
-                contents: prompt,
-                config: {
-                    temperature: 0.3,
-                }
+            const completion = await this.groq.chat.completions.create({
+                messages: [
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                model: "llama3-8b-8192",
+                temperature: 0.3,
+                response_format: { type: "json_object" }
             });
 
-            let text = response.text.trim();
+            let text = completion.choices[0]?.message?.content || "";
+            text = text.trim();
 
-            // Clean up any potential markdown formatting the LLM might have ignored
-            if (text.startsWith('```json')) {
-                text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            } else if (text.startsWith('```')) {
-                text = text.replace(/```/g, '').trim();
-            }
-
-            const forecastArray = JSON.parse(text);
+            const parsed = JSON.parse(text);
+            const forecastArray = parsed.forecast;
 
             if (Array.isArray(forecastArray) && forecastArray.length === 24 && forecastArray.every(v => typeof v === 'number')) {
-                logger.info('Successfully generated LLM 24-hour forecast.');
+                logger.info('Successfully generated Groq 24-hour forecast.');
                 return forecastArray;
             } else {
-                logger.error('LLM returned an invalid format: ' + text);
+                logger.error('Groq returned an invalid format: ' + text);
                 return null;
             }
 
         } catch (error) {
-            logger.error('Failed to generate LLM forecast: ' + error.message);
+            logger.error('Failed to generate Groq forecast: ' + error.message);
             return null;
         }
     }
@@ -76,7 +76,7 @@ Output Format: You MUST output ONLY a valid JSON array containing exactly 24 int
      * @returns {Promise<Array<Object> | null>} Array of alert objects
      */
     async generateStateRecommendations(stateData) {
-        if (!this.ai) {
+        if (!this.groq) {
             // Deterministic fallback if no API key
             return stateData.map((state, idx) => {
                 let action = "Monitor AQI levels closely.";
@@ -96,7 +96,7 @@ Output Format: You MUST output ONLY a valid JSON array containing exactly 24 int
         }
 
         try {
-            logger.info('Requesting state recommendations from Gemini LLM...');
+            logger.info('Requesting state recommendations from Groq LLM...');
             const prompt = `You are an expert environmental AI advisor for a national EPA dashboard.
 Context:
 I am providing you with data for 3 Indian states that currently have high AQI.
@@ -106,29 +106,37 @@ Task:
 For each state, write a single highly actionable, strategic policy recommendation (max 2 sentences) to mitigate the specific primary source of their pollution.
 
 Output Format:
-You MUST output ONLY a valid JSON array of objects. Do not include markdown \`\`\`json blocks.
+You MUST output ONLY a valid JSON object with a single key "recommendations" that contains an array of objects. Do not include markdown \`\`\`json blocks.
 Format exactly like this:
-[
-  {
-    "id": "alert-0",
-    "title": "Severe Alert: [State Name]",
-    "description": "[Your strategic 2-sentence actionable recommendation based strictly on their primary source]",
-    "time": "Live",
-    "type": "[severe if AQI>150, else moderate]"
-  }
-]`;
+{
+  "recommendations": [
+    {
+      "id": "alert-0",
+      "title": "Severe Alert: [State Name]",
+      "description": "[Your strategic 2-sentence actionable recommendation based strictly on their primary source]",
+      "time": "Live",
+      "type": "[severe if AQI>150, else moderate]"
+    }
+  ]
+}`;
 
-            const response = await this.ai.models.generateContent({
-                model: 'gemini-1.5-pro',
-                contents: prompt,
-                config: { temperature: 0.4 }
+            const completion = await this.groq.chat.completions.create({
+                messages: [
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                model: "llama3-8b-8192",
+                temperature: 0.4,
+                response_format: { type: "json_object" }
             });
 
-            let text = response.text.trim();
-            if (text.startsWith('```json')) text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            else if (text.startsWith('```')) text = text.replace(/```/g, '').trim();
+            let text = completion.choices[0]?.message?.content || "";
+            text = text.trim();
 
-            const recommendations = JSON.parse(text);
+            const parsed = JSON.parse(text);
+            const recommendations = parsed.recommendations;
 
             if (Array.isArray(recommendations) && recommendations.length > 0) {
                 return recommendations;

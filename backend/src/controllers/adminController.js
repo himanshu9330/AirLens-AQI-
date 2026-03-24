@@ -738,7 +738,7 @@ const fetchMLNationalData = async () => {
             console.log('[SYNC] Passing 24h Ground-Truth to ML Model');
         }
 
-        const mlUrl = `${process.env.ML_SERVICE_URL}/ml/predict-country`;
+        const mlUrl = `${process.env.ML_SERVICE_URL}/predict-country`;
         const response = await axios.post(mlUrl, payload, { timeout: 15000 });
 
         if (response.data) {
@@ -1147,7 +1147,21 @@ const getNationalHotspots = async (req, res, next) => {
                 };
             });
         } else if (level === 'city' && stateName) {
-            const cities = majorCitiesByState[stateName] || [];
+            let cities = majorCitiesByState[stateName];
+            if (!cities || cities.length === 0) {
+                const st = majorStates.find(s => s.name === stateName);
+                if (st) {
+                    cities = [
+                        { name: stateName + ' Capital', lat: st.lat, lng: st.lng },
+                        { name: stateName + ' North', lat: st.lat + 0.5, lng: st.lng },
+                        { name: stateName + ' South', lat: st.lat - 0.5, lng: st.lng },
+                        { name: stateName + ' East', lat: st.lat, lng: st.lng + 0.5 },
+                        { name: stateName + ' West', lat: st.lat, lng: st.lng - 0.5 }
+                    ];
+                } else {
+                    cities = [];
+                }
+            }
             // Build station AQI data for IDW interpolation
             const stations = getStationAQIData();
 
@@ -1186,7 +1200,30 @@ const getNationalHotspots = async (req, res, next) => {
                 };
             });
         } else if (level === 'area' && cityName) {
-            const areas = majorAreasByCity[cityName] || [];
+            let areas = majorAreasByCity[cityName];
+            if (!areas || areas.length === 0) {
+                let cLat = 22.0, cLng = 78.0;
+                let foundCity = false;
+                for (const stateList of Object.values(majorCitiesByState)) {
+                    const c = stateList.find(city => city.name === cityName);
+                    if (c) { cLat = c.lat; cLng = c.lng; foundCity = true; break; }
+                }
+                
+                if (!foundCity) {
+                    for (const s of majorStates) {
+                        if (cityName.includes(s.name)) {
+                            cLat = s.lat; cLng = s.lng; break;
+                        }
+                    }
+                }
+
+                areas = [
+                    { name: cityName + ' Downtown', lat: cLat, lng: cLng },
+                    { name: cityName + ' Industrial Zone', lat: cLat + 0.02, lng: cLng + 0.02 },
+                    { name: cityName + ' Residential Complex', lat: cLat - 0.02, lng: cLng - 0.02 },
+                    { name: cityName + ' Tech Park', lat: cLat + 0.02, lng: cLng - 0.02 },
+                ];
+            }
             // Build station AQI data for IDW interpolation
             const stations = getStationAQIData();
 
