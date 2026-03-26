@@ -41,6 +41,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/aqi', require('./routes/wardAqiRoutes'));
 app.use('/api/grid', require('./routes/gridRoutes'));
 
+
 // Basic Route
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to Hyper-Local AQI API' });

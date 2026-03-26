@@ -32,6 +32,7 @@ interface Hotspot {
     source: string;
     reason: string;
     action: string;
+    expectedAqi?: number;
     pm2_5?: number;
     no2?: number;
     co2?: number;
@@ -246,11 +247,19 @@ export default function AQIDrillDown() {
                                                 {spot.status}
                                             </span>
                                         </div>
-                                        <div className="text-right shrink-0 ml-3">
+                                        <div className="text-right shrink-0 ml-3 mt-1">
                                             <span className={`text-3xl font-black ${colors.text} leading-none`}>
                                                 {spot.aqi}
                                             </span>
-                                            <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">AQI</p>
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5 mb-1.5">AQI</p>
+                                            {spot.expectedAqi && (
+                                                <div className="flex items-center justify-end gap-1 font-medium bg-slate-900/50 px-1.5 py-0.5 rounded border border-slate-700/50">
+                                                    <TrendingUp className={`w-3 h-3 ${spot.expectedAqi > spot.aqi ? 'text-rose-400' : 'text-emerald-400'} ${spot.expectedAqi < spot.aqi ? 'rotate-180' : ''}`} />
+                                                    <span className={`text-[9px] font-bold ${spot.expectedAqi > spot.aqi ? 'text-rose-400/90' : 'text-emerald-400/90'}`}>
+                                                        {spot.expectedAqi} <span className="text-slate-500 ml-0.5">in 6h</span>
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 

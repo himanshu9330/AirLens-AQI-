@@ -80,8 +80,21 @@ const fetchNationalAQIData = async () => {
             const avgHourly = [];
             for (let t = 0; t < timeSteps; t++) {
                 let sum = 0;
-                allHourlyUsAqi.forEach(history => { sum += history[t]; });
-                avgHourly.push(Math.round(sum / numPoints));
+                let validPoints = 0;
+                allHourlyUsAqi.forEach(history => { 
+                    if (history[t] !== null && history[t] !== undefined) {
+                        sum += history[t]; 
+                        validPoints++;
+                    }
+                });
+                
+                if (validPoints > 0) {
+                    avgHourly.push(Math.round(sum / validPoints));
+                } else {
+                    // If the entire country returned null for this hour, carry forward the previous hour to avoid 0s
+                    const lastValid = avgHourly.length > 0 ? avgHourly[avgHourly.length - 1] : 65;
+                    avgHourly.push(lastValid);
+                }
             }
 
             const history24h = avgHourly.slice(-24);

@@ -780,6 +780,11 @@ const generateDetailedStats = (name, level = 'state', baseAqi = null) => {
     let aqi = Math.round((anchor * factor) + jitter);
     aqi = Math.max(20, aqi); // Ensure floor
 
+    // Predict 6-Hour trend peak based on current volatility
+    const cycle = Math.sin((now.getHours() + 6) * Math.PI / 12);
+    let expectedAqi = Math.round(aqi * (1 + (cycle * 0.15) + ((seed % 10) / 100)));
+    expectedAqi = Math.max(20, expectedAqi);
+
     let status = 'Moderate';
     if (aqi > 250) status = 'Severe';
     else if (aqi > 200) status = 'Very Poor';
@@ -806,6 +811,7 @@ const generateDetailedStats = (name, level = 'state', baseAqi = null) => {
 
     return { 
         aqi, 
+        expectedAqi,
         status, 
         source, 
         reason, 
@@ -1048,17 +1054,6 @@ const getDashboardChartData = async (req, res, next) => {
             if (mlData.data_source === "Open-Meteo Real-time API") realHistoryAqi = mlData.real_history || null;
         }
 
-        // Apply Real Data
-        // Anchor for predictions is the last historical point (Current Hour Start)
-        const anchorIdx = 6;
-
-        if (realLiveAqi !== null && realLiveAqi !== undefined && !isNaN(realLiveAqi)) {
-            chartData[anchorIdx].actual = Math.round(realLiveAqi);
-        } else {
-            const statsBaseline = 65;
-            chartData[anchorIdx].actual = Math.round(statsBaseline + (now.getMinutes() % 10));
-        }
-
         if (realHistoryAqi && realHistoryAqi.length >= 7) {
             for (let i = 0; i <= 6; i++) {
                 const apiIdx = realHistoryAqi.length - 7 + i;
@@ -1067,6 +1062,18 @@ const getDashboardChartData = async (req, res, next) => {
                     chartData[i].actual = Math.round(val);
                 }
             }
+        }
+
+        // Apply Real Live Data
+        // Anchor for predictions is the last historical point (Current Hour Start)
+        const anchorIdx = 6;
+
+        // Assigned AFTER history loop so live data doesn't get overwritten by historical average
+        if (realLiveAqi !== null && realLiveAqi !== undefined && !isNaN(realLiveAqi)) {
+            chartData[anchorIdx].actual = Math.round(realLiveAqi);
+        } else {
+            const statsBaseline = 65;
+            chartData[anchorIdx].actual = Math.round(statsBaseline + (now.getMinutes() % 10));
         }
 
         const verifiedLastActual = chartData[anchorIdx].actual || 65;
